@@ -1,0 +1,33 @@
+print('Olá! Seja bem-vindo. ')
+valor = float(input('Qual valor gostaria de incluir?'))
+entrada_forma = input('Qual será a forma de pagamento? ').lower()
+
+formas = {
+    "dinheiro": ["dinheiro", "à vista", "avista", "dn", "cheque"],
+    "cartao_avista": ["cartao a vista", "cartão à vista", "cartão avista", "credito a vista", "cravista", "cartão à vista", "Cartão à Vista"],
+    "cartao_2x": ["2x", "duas vezes", "parcelado 2x", "duas", "cartao 2x", "2 vezes"],
+    "cartao_3x+": ["3x", "3 vezes", "4x", "mais de 2x", "parcelado", "credito parcelado", "5x", "6x"]
+}
+
+forma_ident = None
+for forma, variações in formas.items():
+    if entrada_forma in variações:
+        forma_ident = forma
+        break
+if forma_ident == "dinheiro":
+    valor_final = valor * 0.90
+    print('Pagamento à vista no dinhero/cheque = 10% de desconto.')
+elif forma_ident == "cartao_vista":
+    valor_final = valor * 0.95
+    print("Pagamento à vista no cartão = 5% de desconto.")
+elif forma_ident == "cartao_2x":
+    valor_final = valor 
+    print("Pagamento em até 2x no cartão, Sem descontos ou juros adicionais.")
+elif forma_ident == "cartao_3x+":
+    valor_final = valor * 1.20
+    print("Pagamento em 3x ou mais no cartão = 20% de juros.")
+else:
+    print("Forma de pagamento não reconhecida")
+    valor_final = None
+if valor_final is not None:
+    print(f"Valor final: R$ {valor_final:.2f}")
