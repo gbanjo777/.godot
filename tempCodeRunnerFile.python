@@ -1,33 +1,185 @@
-print('Olá! Seja bem-vindo. ')
-valor = float(input('Qual valor gostaria de incluir?'))
-entrada_forma = input('Qual será a forma de pagamento? ').lower()
+from datetime import datetime
 
-formas = {
-    "dinheiro": ["dinheiro", "à vista", "avista", "dn", "cheque"],
-    "cartao_avista": ["cartao a vista", "cartão à vista", "cartão avista", "credito a vista", "cravista", "cartão à vista", "Cartão à Vista"],
-    "cartao_2x": ["2x", "duas vezes", "parcelado 2x", "duas", "cartao 2x", "2 vezes"],
-    "cartao_3x+": ["3x", "3 vezes", "4x", "mais de 2x", "parcelado", "credito parcelado", "5x", "6x"]
+# Banco de dados de bolos com sabores e preços
+bolos = {
+    "com cobertura": {
+        "alias": ["com", "cobertura", "c", "cob"],
+        "sabores": {
+            "cenoura com cobertura": 20.00,
+            "queijo com goiabada": 20.00,
+            "chocolate com cobertura": 20.00,
+            "aipim (encomenda)": 20.00,
+            "red velvet": 20.00,
+            "churros": 20.00,
+            "café (encomenda)": 20.00,
+            "maracujá": 20.00,
+            "queijo": 20.00,
+            "beijinho": 20.00,
+            "paçoca": 20.00,
+            "milho (encomenda)": 20.00,
+            "banana (encomenda)": 20.00,
+            "limão": 20.00
+        }
+    },
+    "sem cobertura": {
+        "alias": ["sem", "sem cobertura", "s", "sc"],
+        "sabores": {
+            "fubá": 14.00,
+            "fubá com coco": 14.00,
+            "fubá com erva doce": 14.00,
+            "formigueiro": 14.00,
+            "mesclado": 14.00,
+            "coco": 14.00,
+            "laranja": 14.00,
+            "baunilha": 14.00,
+            "chocolate": 14.00
+        }
+    },
+    "tortas": {
+        "alias": ["torta", "tortas", "sobremesa", "doces"],
+        "sabores": {
+            "morango": 30.00,
+            "maracujá": 30.00,
+            "chocolate": 30.00,
+            "coco": 30.00,
+            "limão": 30.00
+        }
+    }
+}
+# Formas de pagamento e descontos/juros
+pagamentos = {
+    "pix": {
+        "alias": ["pix", "px"],
+        "desconto": 0.00
+    },
+    "débito": {
+        "alias": ["debito", "débito", "db", "deb"],
+        "desconto": 1.00
+    },
+    "crédito": {
+        "alias": ["credito", "crédito", "ct", "cr"],
+        "desconto": 1.00
+    },
+    "dinheiro": {
+        "alias": ["dinheiro", "cash", "dn"],
+        "desconto": 0.00
+    },
+    "parcelado": {
+        "alias": [f"{i}x" for i in range(2, 25)],
+        "desconto": -0.10  # 10% de juros
+    }
 }
 
-forma_ident = None
-for forma, variações in formas.items():
-    if entrada_forma in variações:
-        forma_ident = forma
+# Boas-vindas e identificação
+print("🧁 Bem-vindo à nossa loja de bolos!")
+cliente = input("Digite o nome do cliente: ").strip().title()
+
+# Exibir cardápio
+print("\n📋 Cardápio:")
+for tipo, dados in bolos.items():
+    print(f"\n{tipo.capitalize()}:")
+    for sabor, preco in dados["sabores"].items():
+        print(f" - {sabor} (R$ {preco:.2f})")
+
+# Iniciar pedido
+pedidos = []
+
+while True:
+    tipo_bolo_input = input("\nQual tipo de bolo você deseja? (com cobertura / sem cobertura) ou 'fim': ").lower()
+    if tipo_bolo_input == "fim":
         break
-if forma_ident == "dinheiro":
-    valor_final = valor * 0.90
-    print('Pagamento à vista no dinhero/cheque = 10% de desconto.')
-elif forma_ident == "cartao_vista":
-    valor_final = valor * 0.95
-    print("Pagamento à vista no cartão = 5% de desconto.")
-elif forma_ident == "cartao_2x":
-    valor_final = valor 
-    print("Pagamento em até 2x no cartão, Sem descontos ou juros adicionais.")
-elif forma_ident == "cartao_3x+":
-    valor_final = valor * 1.20
-    print("Pagamento em 3x ou mais no cartão = 20% de juros.")
+
+    tipo_valido = None
+    for tipo, dados in bolos.items():
+        if tipo_bolo_input in dados["alias"] or tipo_bolo_input == tipo:
+            tipo_valido = tipo
+            break
+
+    if not tipo_valido:
+        print("❌ Tipo de bolo inválido. Tente novamente.")
+        continue
+
+    # Mostrar sabores disponíveis
+    print(f"\nSabores disponíveis para {tipo_valido}:")
+    for sabor, preco in bolos[tipo_valido]["sabores"].items():
+        print(f" - {sabor} (R$ {preco:.2f})")
+
+    sabor_input = input("Digite o sabor desejado: ").lower()
+    if sabor_input not in bolos[tipo_valido]["sabores"]:
+        print("❌ Sabor inválido.")
+        continue
+
+    try:
+        quantidade = int(input("Quantidade: "))
+        if quantidade <= 0:
+            print("❌ Quantidade inválida.")
+            continue
+    except ValueError:
+        print("❌ Digite um número válido.")
+        continue
+
+    preco_unit = bolos[tipo_valido]["sabores"][sabor_input]
+
+    pedidos.append({
+        "tipo": tipo_valido,
+        "sabor": sabor_input,
+        "quantidade": quantidade,
+        "preco_unit": preco_unit
+    })
+
+# Se não houver pedidos, encerrar
+if not pedidos:
+    print("\n⚠️ Nenhum pedido registrado.")
+    exit()
+
+# Escolher forma de pagamento
+print("\nFormas de pagamento disponíveis:")
+print(" - Pix (sem desconto)")
+print(" - Débito (10% desconto)")
+print(" - Crédito (10% desconto)")
+print(" - Dinheiro (sem desconto)")
+print(" - Parcelado de 2x até 24x (com 10% de juros)")
+
+pagamento_input = input("\nEscolha a forma de pagamento: ").lower()
+pagamento_valido = None
+desconto = 0.0
+
+for forma, dados in pagamentos.items():
+    if pagamento_input in dados["alias"] or pagamento_input == forma:
+        pagamento_valido = forma
+        desconto = dados["desconto"]
+        break
+
+if not pagamento_valido:
+    print("❌ Forma de pagamento inválida.")
+    exit()
+
+# Cálculo final
+total = 0
+print("\n🧾 RESUMO DO PEDIDO:")
+for item in pedidos:
+    subtotal = item["quantidade"] * item["preco_unit"]
+    total += subtotal
+    print(f"{item['quantidade']}x {item['sabor']} ({item['tipo']}) - R$ {subtotal:.2f}")
+
+preco_final = total * (1 - desconto)
+
+if desconto >= 0:
+    print(f"\n💰 Desconto aplicado: {int(desconto * 100)}%")
 else:
-    print("Forma de pagamento não reconhecida")
-    valor_final = None
-if valor_final is not None:
-    print(f"Valor final: R$ {valor_final:.2f}")
+    print(f"\n💸 Juros aplicados: {int(-desconto * 100)}%")
+
+print(f"💵 Total final a pagar: R$ {preco_final:.2f}")
+
+# Registrar no arquivo
+data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+with open("pedidos.txt", "a", encoding="utf-8") as arquivo:
+    arquivo.write(f"\n[{data_hora}] Cliente: {cliente}\n")
+    for item in pedidos:
+        linha = f"- {item['quantidade']}x {item['sabor']} ({item['tipo']}) - R$ {item['preco_unit']:.2f}\n"
+        arquivo.write(linha)
+    arquivo.write(f"Forma de pagamento: {pagamento_valido}\n")
+    arquivo.write(f"Total bruto: R$ {total:.2f} | Total final: R$ {preco_final:.2f}\n")
+    arquivo.write("-" * 50 + "\n")
+
+print("\n✅ Pedido salvo com sucesso no arquivo 'pedidos.txt'!")
